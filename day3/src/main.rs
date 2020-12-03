@@ -5,11 +5,11 @@ use std::io;
 struct Terrain {
     content: Vec<Vec<char>>,
     current_line: usize,
-    current_column: usize,
+    current_column: usize
 }
 
 impl Terrain {
-    fn new(content: String) -> Terrain {
+    fn new(content: &String) -> Terrain {
         let mut terrain: Vec<Vec<char>> = Vec::new();
         for line in content.lines() {
             let chars: Vec<char> = line.chars().collect();
@@ -18,7 +18,7 @@ impl Terrain {
         Terrain {
             content: terrain,
             current_line: 0,
-            current_column: 0,
+            current_column: 0
         }
     }
 
@@ -32,9 +32,9 @@ impl Terrain {
         });
     }
 
-    fn step(&mut self) -> char {
-        self.current_line += 1;
-        self.current_column += 3;
+    fn step(&mut self, slope: (usize, usize)) -> char {
+        self.current_line += slope.1;
+        self.current_column += slope.0;
         if self.current_column >= 31 {
             self.current_column -= 31
         }
@@ -49,16 +49,38 @@ fn read_file() -> Result<String, io::Error> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    /*
+    Right 1, down 1.
+    Right 3, down 1.
+    Right 5, down 1.
+    Right 7, down 1.
+    Right 1, down 2.
+    */
+
     let content = read_file()?;
-    let mut terrain = Terrain::new(content);
-    let mut counter = 0;
-    for _ in 1..terrain.content.len() {
-        let char = terrain.step();
-        if char == '#' {
-            counter += 1;
+    let slopes: [(usize, usize); 5] = [
+        (1, 1),
+        (3, 1),
+        (5, 1),
+        (7, 1),
+        (1, 2)
+    ];
+    let mut total: i64 = 1;
+    for &slope in slopes.iter() {
+        let mut terrain = Terrain::new(&content);
+        let mut counter = 0;
+        for _ in 0..terrain.content.len() - 1 {
+            if terrain.current_line + slope.1 > 323 {
+                break
+            }
+            let char = terrain.step(slope);
+            if char == '#' {
+                counter += 1;
+            }
         }
+        println!("Slope: ({}, {}), Trees: {}", slope.0, slope.1 , counter);
+        total *= counter;
     }
-    // should be 268
-    println!("Trees: {}", counter);
+    println!("Total: {}", total);
     Ok(())
 }

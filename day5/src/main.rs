@@ -9,16 +9,28 @@ fn read_file() -> Result<String, io::Error> {
 fn main() -> Result<(), Box<dyn Error>> {
     let content = read_file()?;
     let mut highest_id = 0;
+    let mut existing_ids: Vec<i32> = Vec::new();
     for line in content.lines() {
         let rows = &line[0..7];
         let columns = &line[7..10];
         let rows = calculate_step(&rows.to_string(), 6, 127, 0);
         let columns = calculate_step(&columns.to_string(), 2, 7, 0);
         let id = rows * 8 + columns;
+        existing_ids.push(id);
         if id > highest_id {
             highest_id = id;
         }
     }
+    existing_ids.sort();
+    existing_ids.iter().enumerate().for_each(|(i, _x)| {
+        if i < existing_ids.len() - 1 {
+            let lower = existing_ids[i];
+            let higher = existing_ids[i + 1];
+            if higher - lower == 2 {
+                println!("SEAT {}", higher - 1);
+            }
+        }
+    });
     println!("Highest ID: {}", highest_id);
     Ok(())
 }
